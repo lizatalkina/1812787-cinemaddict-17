@@ -2,7 +2,7 @@ import View from './general-view.js';
 import {humanizeYearDueDate, humanizeTimeDueDate} from '../util.js';
 
 const createFilmCardTemplate = (film) => {
-  const {comments, filmInfo, userDetails} = film;
+  const {comments, filmInfo, userDetails, id} = film;
   const date = humanizeYearDueDate(filmInfo.release.date);
   const time = humanizeTimeDueDate(filmInfo.runtime);
 
@@ -14,7 +14,7 @@ const createFilmCardTemplate = (film) => {
 
   return (
     `<article class="film-card">
-    <a class="film-card__link">
+    <a class="film-card__link" id=${id}>
       <h3 class="film-card__title">${filmInfo.title}</h3>
       <p class="film-card__rating">${filmInfo.totalRating}</p>
       <p class="film-card__info">
@@ -35,12 +35,13 @@ const createFilmCardTemplate = (film) => {
   );
 };
 export default class FilmCardView extends View {
+  #film = null;
   constructor(film) {
     super();
-    this.film = film;
+    this.#film = film;
   }
 
-  getTemplate() {
-    return createFilmCardTemplate(this.film);
+  get template() {
+    return createFilmCardTemplate(this.#film);
   }
 }

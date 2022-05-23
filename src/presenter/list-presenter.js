@@ -5,6 +5,7 @@ import FilmsView from '../view/films-view.js';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
 import {render} from '../render.js';
 import PopupPresenter from './popup-presenter.js';
+import {closePopup} from './popup-presenter.js';
 
 const siteMainElement = document.querySelector('.main');
 export default class ListPresenter {
@@ -35,6 +36,7 @@ export default class ListPresenter {
     const movieCard = new FilmCardView(film, this.#filmslistContainerComponent.element);
 
     const openPopup = () => {
+      closePopup();
       const popupPresenter = new PopupPresenter();
       popupPresenter.init(siteMainElement, this.#moviesModel, film);
       document.body.classList.add('hide-overflow');

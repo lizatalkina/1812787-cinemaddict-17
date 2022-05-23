@@ -41,4 +41,6 @@ const generateDate = (maxDaysGap, minDaysGap) => {
   return dayjs().add(daysGap, 'day').toDate();
 };
 
-export {getRandomInteger, getRandomFloat, humanizeCommentDueDate, humanizeYearDueDate, humanizeReleaseDueDate, humanizeTimeDueDate, getArrayWithRandomElements, getRandomArrayElement, generateDate};
+const isEscapeKey = (evt) => evt.key === 'Escape';
+
+export {getRandomInteger, getRandomFloat, humanizeCommentDueDate, humanizeYearDueDate, humanizeReleaseDueDate, humanizeTimeDueDate, getArrayWithRandomElements, getRandomArrayElement, generateDate, isEscapeKey};

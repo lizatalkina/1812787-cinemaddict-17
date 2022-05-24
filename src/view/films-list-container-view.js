@@ -7,7 +7,7 @@ export default class FilmsListContainerView extends View {
     super();
   }
 
-  getTemplate() {
+  get template() {
     return createFilmsListContainerTemplate();
   }
 }

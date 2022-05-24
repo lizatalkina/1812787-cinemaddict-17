@@ -9,14 +9,17 @@ const createFilterTemplate = (watchlist, history, favorites) => (
   </nav>`
 );
 export default class FilterView extends View {
+  #watchlist = null;
+  #history = null;
+  #favorites = null;
   constructor(watchlist, history, favorites) {
     super();
-    this.watchlist = watchlist;
-    this.history = history;
-    this.favorites = favorites;
+    this.#watchlist = watchlist;
+    this.#history = history;
+    this.#favorites = favorites;
   }
 
-  getTemplate() {
-    return createFilterTemplate(this.watchlist, this.history, this.favorites);
+  get template() {
+    return createFilterTemplate(this.#watchlist, this.#history, this.#favorites);
   }
 }

@@ -146,13 +146,15 @@ const createPopupTemplate = (film, comments) => {
   );
 };
 export default class PopupView extends View {
+  #film = null;
+  #comments = null;
   constructor(film, comments) {
     super();
-    this.film = film;
-    this.comments = comments;
+    this.#film = film;
+    this.#comments = comments;
   }
 
-  getTemplate() {
-    return createPopupTemplate(this.film, this.comments);
+  get template() {
+    return createPopupTemplate(this.#film, this.#comments);
   }
 }

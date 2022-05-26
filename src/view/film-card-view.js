@@ -1,5 +1,5 @@
-import View from './general-view.js';
-import {humanizeYearDueDate, humanizeTimeDueDate} from '../util.js';
+import AbstractView from '../framework/view/abstract-view.js';
+import {humanizeYearDueDate, humanizeTimeDueDate} from '../utils/movie.js';
 
 const createFilmCardTemplate = (film) => {
   const {comments, filmInfo, userDetails, id} = film;
@@ -34,7 +34,7 @@ const createFilmCardTemplate = (film) => {
   </article>`
   );
 };
-export default class FilmCardView extends View {
+export default class FilmCardView extends AbstractView {
   #film = null;
   constructor(film) {
     super();
@@ -44,4 +44,14 @@ export default class FilmCardView extends View {
   get template() {
     return createFilmCardTemplate(this.#film);
   }
+
+  setCardClickHandler = (callback) => {
+    this._callback.cardClick = callback;
+    this.element.querySelector('.film-card__link').addEventListener('click', this.#cardClickHandler);
+  };
+
+  #cardClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.cardClick();
+  };
 }

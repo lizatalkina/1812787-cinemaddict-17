@@ -1,4 +1,4 @@
-import View from './general-view.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createSortTemplate = () => (
   `<ul class="sort">
@@ -8,10 +8,7 @@ const createSortTemplate = () => (
   </ul>`
 );
 
-export default class SortView extends View {
-  constructor() {
-    super();
-  }
+export default class SortView extends AbstractView {
 
   get template() {
     return createSortTemplate();

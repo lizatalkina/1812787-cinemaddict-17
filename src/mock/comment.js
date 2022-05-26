@@ -1,4 +1,4 @@
-import {generateDate} from '../util.js';
+import {generateDate} from '../utils/movie.js';
 
 const comments = [
   {

@@ -1,4 +1,5 @@
-import {getRandomInteger, getRandomFloat, getArrayWithRandomElements, getRandomArrayElement, generateDate} from '../util.js';
+import {getRandomInteger, getRandomFloat,getArrayWithRandomElements, getRandomArrayElement} from '../utils/common.js';
+import {generateDate} from '../utils/movie.js';
 import {comments} from './comment.js';
 
 const authors = [

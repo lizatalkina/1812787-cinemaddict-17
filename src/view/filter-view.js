@@ -1,4 +1,4 @@
-import View from './general-view.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createFilterTemplate = (watchlist, history, favorites) => (
   `<nav class="main-navigation">
@@ -8,7 +8,7 @@ const createFilterTemplate = (watchlist, history, favorites) => (
     <a href="#favorites" class="main-navigation__item">Favorites <span class="main-navigation__item-count">${favorites}</span></a>
   </nav>`
 );
-export default class FilterView extends View {
+export default class FilterView extends AbstractView {
   #watchlist = null;
   #history = null;
   #favorites = null;

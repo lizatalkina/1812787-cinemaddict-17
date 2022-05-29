@@ -3,7 +3,7 @@ import FilmsListContainerView from '../view/films-list-container-view.js';
 import FilmsListView from '../view/films-list-view.js';
 import FilmsView from '../view/films-view.js';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
-import {render} from '../render.js';
+import {render, remove} from '../framework/render.js';
 import PopupPresenter from './popup-presenter.js';
 import {closePopup} from './popup-presenter.js';
 import FilmsListEmptyView from '../view/films-list-empty-view.js';
@@ -32,8 +32,7 @@ export default class ListPresenter {
     this.#renderBoard();
   };
 
-  #handleShowMoreButtomClick = (evt) => {
-    evt.preventDefault();
+  #handleShowMoreButtomClick = () => {
     this.#boardMovies
       .slice(this.#renderedMovieCount, this.#renderedMovieCount + MOVIE_COUNT_PER_STEP)
       .forEach((movie) => this.#renderMovie(movie));
@@ -41,8 +40,7 @@ export default class ListPresenter {
     this.#renderedMovieCount += MOVIE_COUNT_PER_STEP;
 
     if (this.#renderedMovieCount >= this.#boardMovies.length) {
-      this.#showMoreButtonComponent.element.remove();
-      this.#showMoreButtonComponent.removeElement();
+      remove(this.#showMoreButtonComponent);
     }
   };
 
@@ -56,8 +54,7 @@ export default class ListPresenter {
       document.body.classList.add('hide-overflow');
     };
 
-    movieCard.element.querySelector('.film-card__link').addEventListener('click', (evt) => {
-      evt.preventDefault();
+    movieCard.setCardClickHandler (() => {
       openPopup();
     });
 
@@ -78,7 +75,7 @@ export default class ListPresenter {
       }
       if (this.#boardMovies.length > MOVIE_COUNT_PER_STEP) {
         render(this.#showMoreButtonComponent, this.#filmsListComponent.element);
-        this.#showMoreButtonComponent.element.addEventListener('click', this.#handleShowMoreButtomClick);
+        this.#showMoreButtonComponent.setClickHandler(this.#handleShowMoreButtomClick);
       }
     }
   };

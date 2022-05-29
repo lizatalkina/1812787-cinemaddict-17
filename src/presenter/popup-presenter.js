@@ -1,6 +1,6 @@
 import PopupView from '../view/popup-view.js';
-import {render} from '../render.js';
-import {isEscapeKey} from '../util.js';
+import {isEscapeKey} from '../utils/common.js';
+import {render} from '../framework/render.js';
 
 const closePopup = () => {
   const filmDetails = document.body.querySelector('.film-details');
@@ -14,13 +14,15 @@ export default class PopupPresenter {
   #popupContainer = null;
   #moviesModel = null;
   #comments = [];
+  #popup = null;
 
   init = (popupContainer, moviesModel, boardMovie) => {
     this.#popupContainer = popupContainer;
     this.#moviesModel = moviesModel;
     this.#boardMovie = boardMovie;
     this.#comments = [...moviesModel.getComments(this.#boardMovie.id)];
-    render(new PopupView(this.#boardMovie, this.#comments), this.#popupContainer);
+    this.#popup = new PopupView(this.#boardMovie, this.#comments);
+    render(this.#popup, this.#popupContainer);
     this.#renderPopup();
   };
 
@@ -34,7 +36,7 @@ export default class PopupPresenter {
       }
     };
 
-    this.#popupContainer.querySelector('.film-details__close-btn').addEventListener('click', () => {
+    this.#popup.setCloseClickHandler( () => {
       closePopup();
       document.removeEventListener('keydown', onEscKeyDown);
     });

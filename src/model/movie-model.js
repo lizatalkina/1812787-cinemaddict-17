@@ -1,15 +1,33 @@
 import {generateMovie} from '../mock/movie.js';
 import {comments} from '../mock/comment.js';
 
+class Movie {
+  id;
+  comments;
+  filmInfo;
+  userDetails;
+  constructor(movieData) {
+    this.id = movieData.id;
+    this.comments = movieData.comments;
+    this.filmInfo = movieData.filmInfo;
+    this.userDetails = movieData.userDetails;
+  }
+
+  getComments = () => comments.filter(
+    (comment) => this.comments.includes(comment.id)
+  );
+}
+
 export default class MoviesModel {
-  #movies;
+  #movies = [];
   #watchlistCount = 0;
   #historyCount = 0;
   #favoritesCount = 0;
   constructor() {
-    this.#movies = Array.from({length: 24}, generateMovie);
-    for (let i = 0; i < this.#movies.length; i++) {
-      const movie = this.#movies[i];
+    const moviesData = Array.from({length: 24}, generateMovie);
+    for (let i = 0; i < moviesData.length; i++) {
+      const movie = new Movie(moviesData[i]);
+      this.#movies.push(movie);
       if (movie.userDetails.watchlist) {
         this.#watchlistCount++;
       }

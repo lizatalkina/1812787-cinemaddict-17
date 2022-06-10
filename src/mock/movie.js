@@ -1,6 +1,7 @@
 import {getRandomInteger, getRandomFloat,getArrayWithRandomElements, getRandomArrayElement} from '../utils/common.js';
 import {generateDate} from '../utils/movie.js';
 import {comments} from './comment.js';
+import {nanoid} from 'nanoid';
 
 const authors = [
   'Burt Lancaster',
@@ -77,7 +78,7 @@ const descriptions = [
 const commentsIDs = comments.map((a) => a.id);
 
 export const generateMovie = () => ({
-  id: getRandomInteger(0, 10000),
+  id: nanoid(),
   comments: getArrayWithRandomElements(commentsIDs),
   filmInfo: {
     title: getRandomArrayElement(titles),

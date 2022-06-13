@@ -24,9 +24,9 @@ export default class MoviesModel {
   #historyCount = 0;
   #favoritesCount = 0;
   constructor() {
-    const moviesData = Array.from({length: 24}, generateMovie);
-    for (let i = 0; i < moviesData.length; i++) {
-      const movie = new Movie(moviesData[i]);
+    for (let i = 0; i < 24; i++) {
+      const movieData = generateMovie();
+      const movie = new Movie(movieData);
       this.#movies.push(movie);
       if (movie.userDetails.watchlist) {
         this.#watchlistCount++;

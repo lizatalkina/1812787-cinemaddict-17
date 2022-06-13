@@ -86,6 +86,7 @@ export default class MoviePresenter {
     this.#changeMode();
     this.#comments = this.#film.getComments();
     this.#popup = new PopupView(this.#film, this.#comments);
+    //this.#popup = new PopupView({...this.#film, comments: this.#comments},this.#comments);
     render(this.#popup, siteMainElement);
     this.#popup.setCloseClickHandler(this.#closePopup);
     this.#popup.setWatchlistClickHandler(this.#handleWatchlistClick);

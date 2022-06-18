@@ -2,6 +2,7 @@ import FilmCardView from '../view/film-card-view.js';
 import {render, replace, remove} from '../framework/render.js';
 import PopupView from '../view/popup-view.js';
 import {isEscapeKey} from '../utils/common.js';
+import {UserAction, UpdateType} from '../const.js';
 
 const siteMainElement = document.querySelector('.main');
 const Mode = {
@@ -31,7 +32,7 @@ export default class MoviePresenter {
     const prevMovieCardComponent = this.#movieCardComponent;
 
     this.#movieCardComponent = new FilmCardView(film);
-    this.#movieCardComponent.setCardClickHandler(this.#openPopup);
+    this.#movieCardComponent.setCardClickHandler(this.#renderPopup);
     this.#movieCardComponent.setWatchlistClickHandler(this.#handleWatchlistClick);
     this.#movieCardComponent.setAlreadyWatchedHandler(this.#handleAlreadyWatchedClick);
     this.#movieCardComponent.setFavoriteHandler(this.#handleFavoriteClick);
@@ -56,39 +57,79 @@ export default class MoviePresenter {
   };
 
   #handleWatchlistClick = () => {
-    this.#changeData(Object.assign({}, this.#film, {
+    const update = Object.assign({}, this.#film, {
       userDetails: {...this.#film.userDetails, watchlist: !this.#film.userDetails.watchlist}
-    }));
+    });
+    const updateScroll = document.querySelector('.film-details') !== null;
+    let scroll = 0;
+    if (updateScroll) {
+      scroll = document.querySelector('.film-details').scrollTop;
+    }
+    this.#changeData(
+      UserAction.UPDATE_MOVIE,
+      UpdateType.PATCH,
+      update);
+    this.#film = update;
     if (this.#mode !== Mode.DEFAULT) {
-      this.#openPopup();
+      this.#renderPopup();
+      if (updateScroll) {
+        document.querySelector('.film-details').scrollTo(0, scroll);
+      }
     }
   };
 
   #handleAlreadyWatchedClick = () => {
-    this.#changeData(Object.assign({}, this.#film, {
+    const update = Object.assign({}, this.#film, {
       userDetails: {...this.#film.userDetails, alreadyWatched: !this.#film.userDetails.alreadyWatched}
-    }));
+    });
+    const updateScroll = document.querySelector('.film-details') !== null;
+    let scroll = 0;
+    if (updateScroll) {
+      scroll = document.querySelector('.film-details').scrollTop;
+    }
+    this.#changeData(
+      UserAction.UPDATE_MOVIE,
+      UpdateType.PATCH,
+      update);
+    this.#film = update;
     if (this.#mode !== Mode.DEFAULT) {
-      this.#openPopup();
+      this.#renderPopup();
+      if (updateScroll) {
+        document.querySelector('.film-details').scrollTo(0, scroll);
+      }
     }
   };
 
   #handleFavoriteClick = () => {
-    this.#changeData(Object.assign({}, this.#film, {
+    const update = Object.assign({}, this.#film, {
       userDetails: {...this.#film.userDetails, favorite: !this.#film.userDetails.favorite}
-    }));
+    });
+    const updateScroll = document.querySelector('.film-details') !== null;
+    let scroll = 0;
+    if (updateScroll) {
+      scroll = document.querySelector('.film-details').scrollTop;
+    }
+    this.#changeData(
+      UserAction.UPDATE_MOVIE,
+      UpdateType.PATCH,
+      update);
+    this.#film = update;
     if (this.#mode !== Mode.DEFAULT) {
-      this.#openPopup();
+      this.#renderPopup();
+      if (updateScroll) {
+        document.querySelector('.film-details').scrollTo(0, scroll);
+      }
     }
   };
 
-  #openPopup = () => {
+  #renderPopup = () => {
     this.#changeMode();
-    this.#comments = this.#film.getComments();
-    this.#popup = new PopupView(this.#film, this.#comments);
-    //this.#popup = new PopupView({...this.#film, comments: this.#comments},this.#comments);
+    this.#closePopup();
+    this.#popup = new PopupView(this.#film);
     render(this.#popup, siteMainElement);
-    this.#popup.setCloseClickHandler(this.#closePopup);
+    this.#popup.setCloseClickHandler(this.#closePopupRenderBoard);
+    this.#popup.setDeleteCommentClickHandler(this.#handleDeleteCommentClick);
+    this.#popup.setSendCommentKeydownHandler(this.#handleSendCommentKeydown);
     this.#popup.setWatchlistClickHandler(this.#handleWatchlistClick);
     this.#popup.setAlreadyWatchedHandler(this.#handleAlreadyWatchedClick);
     this.#popup.setFavoriteHandler(this.#handleFavoriteClick);
@@ -105,10 +146,44 @@ export default class MoviePresenter {
     this.#mode = Mode.DEFAULT;
   };
 
+  #closePopupRenderBoard = () => {
+    this.#closePopup();
+  };
+
   #escKeyDownHandler = (evt) => {
     if (isEscapeKey(evt)) {
       evt.preventDefault();
       this.#closePopup();
+    }
+  };
+
+  #handleSendCommentKeydown = (movie, comment) => {
+    this.#changeData(
+      UserAction.ADD_COMMENT,
+      UpdateType.PATCH,
+      movie,
+      comment,
+    );
+    this.#film = movie;
+    const scroll = document.querySelector('.film-details').scrollTop;
+    if (this.#mode !== Mode.DEFAULT) {
+      this.#renderPopup();
+      document.querySelector('.film-details').scrollTo(0, scroll);
+    }
+  };
+
+  #handleDeleteCommentClick = (movie, comment) => {
+    this.#changeData (
+      UserAction.DELETE_COMMENT,
+      UpdateType.PATCH,
+      movie,
+      comment,
+    );
+    this.#film = movie;
+    const scroll = document.querySelector('.film-details').scrollTop;
+    if (this.#mode !== Mode.DEFAULT) {
+      this.#renderPopup();
+      document.querySelector('.film-details').scrollTo(0, scroll);
     }
   };
 

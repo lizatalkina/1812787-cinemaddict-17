@@ -4,29 +4,38 @@ import FilmsView from '../view/films-view.js';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
 import {render, remove, RenderPosition} from '../framework/render.js';
 import FilmsListEmptyView from '../view/films-list-empty-view.js';
+import LoadingView from '../view/loading-view.js';
 import SortView from '../view/sort-view.js';
 import MoviePresenter from './movie-presenter.js';
 import {sortMovieDate, sortMovieRating} from '../utils/movie.js';
 import {SortType, UpdateType, UserAction, FilterType} from '../const.js';
-import {filter} from '../utils/filter.js';
+import {filterMethod} from '../utils/filter.js';
+import FooterLogoView from '../view/footer-logo-view.js';
+import FooterStatisticsView from '../view/footer-statistics-view.js';
 
 const siteMainElement = document.querySelector('.main');
+const siteFooterElement = document.querySelector('.footer');
 const MOVIE_COUNT_PER_STEP = 5;
 
 export default class ListPresenter {
   #filmsComponent = new FilmsView();
   #filmsListComponent = new FilmsListView();
   #filmslistContainerComponent = new FilmsListContainerView();
+  #loadingComponent = new LoadingView();
   #showMoreButtonComponent = null;
   #sortComponent = null;
   #filmsListEmptyComponent = null;
   #listContainer = null;
+  #footerLogoComponent = null;
+  #footerStatisticsComponent  = null;
   #moviesModel = null;
   #filterModel = null;
+
   #moviePresenter = new Map();
   #renderedMovieCount = MOVIE_COUNT_PER_STEP;
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.ALL;
+  #isLoading = true;
 
   constructor(listContainer, moviesModel, filterModel) {
     this.#listContainer = listContainer;
@@ -40,7 +49,7 @@ export default class ListPresenter {
   get movies () {
     this.#filterType = this.#filterModel.filter;
     const movies = this.#moviesModel.movies;
-    const filteredMovies = filter[this.#filterType](movies);
+    const filteredMovies = filterMethod[this.#filterType](movies);
 
     switch (this.#currentSortType) {
       case SortType.DATE_SORT:
@@ -68,15 +77,23 @@ export default class ListPresenter {
     }
   };
 
-  #handleViewAction = (actionType, updateType, update, comment) => {
+  #handleViewAction = async (actionType, updateType, update, comment) => {
     switch (actionType) {
       case UserAction.UPDATE_MOVIE:
+        this.#moviePresenter.get(update.id).setSaving();
         this.#moviesModel.updateMovie(updateType, update);
         break;
       case UserAction.ADD_COMMENT:
-        this.#moviesModel.addComment(updateType, update, comment);
+        this.#moviePresenter.get(update.id).setSaving();
+        try {
+          await this.#moviesModel.addComment(updateType, update, comment);
+        } catch(err) {
+          this.#moviePresenter.get(update.id).setAborting();
+        }
         break;
       case UserAction.DELETE_COMMENT:
+        this.#moviePresenter.get(update.id).setSaving();
+        this.#moviePresenter.get(update.id).setDeleting();
         this.#moviesModel.deleteComment(updateType, update, comment);
         break;
     }
@@ -94,6 +111,12 @@ export default class ListPresenter {
       case UpdateType.MAJOR:
         this.#clearBoard({resetRenderedMovieCount: true, resetSortType: true});
         this.#renderBoard();
+        break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderBoard();
+        this.#renderFooter();
         break;
     }
   };
@@ -116,13 +139,17 @@ export default class ListPresenter {
   };
 
   #renderMovie = (film) => {
-    const moviePresenter = new MoviePresenter(this.#filmslistContainerComponent.element, this.#handleViewAction, this.#handleModeChange);
+    const moviePresenter = new MoviePresenter(this.#filmslistContainerComponent.element, this.#handleViewAction, this.#handleModeChange, this.#moviesModel.getCommentsByMovie);
     moviePresenter.init(film);
     this.#moviePresenter.set(film.id, moviePresenter);
   };
 
   #renderMovies = (movies) => {
     movies.forEach((movie) => this.#renderMovie(movie));
+  };
+
+  #renderLoading = () => {
+    render(this.#loadingComponent, this.#filmsComponent.element, RenderPosition.AFTERBEGIN);
   };
 
   #renderFilmListEmpty = () => {
@@ -147,17 +174,14 @@ export default class ListPresenter {
     this.#moviePresenter.clear();
 
     remove(this.#sortComponent);
+    remove(this.#loadingComponent);
     remove(this.#showMoreButtonComponent);
 
     if (this.#filmsListEmptyComponent) {
       remove(this.#filmsListEmptyComponent);
     }
 
-    if (resetRenderedMovieCount) {
-      this.#renderedMovieCount = MOVIE_COUNT_PER_STEP;
-    } else {
-      this.#renderedMovieCount = Math.min(movieCount, this.#renderedMovieCount);
-    }
+    this.#renderedMovieCount = resetRenderedMovieCount ? MOVIE_COUNT_PER_STEP : Math.min(movieCount, this.#renderedMovieCount);
 
     if (resetSortType) {
       this.#currentSortType = SortType.DEFAULT;
@@ -165,13 +189,21 @@ export default class ListPresenter {
   };
 
   #renderBoard = () => {
+    if (this.#isLoading) {
+      render(this.#filmsComponent, this.#listContainer);
+      this.#renderLoading();
+      return;
+    }
+
     const movies = this.movies;
     const movieCount = movies.length;
+
     if (movieCount === 0) {
       render(this.#filmsComponent, this.#listContainer);
       this.#renderFilmListEmpty();
       return;
     }
+
     this.#renderSort();
     render(this.#filmsComponent, this.#listContainer);
     render(this.#filmsListComponent, this.#filmsComponent.element);
@@ -181,4 +213,15 @@ export default class ListPresenter {
       this.#renderShowMoreButton();
     }
   };
+
+  #renderFooter = () => {
+    const movies = this.movies;
+    const moviesCount = movies.length;
+
+    this.#footerLogoComponent = new FooterLogoView();
+    this.#footerStatisticsComponent = new FooterStatisticsView(moviesCount);
+    render(this.#footerLogoComponent, siteFooterElement, RenderPosition.AFTERBEGIN);
+    render(this.#footerStatisticsComponent, siteFooterElement, RenderPosition.BEFOREEND);
+  };
+
 }

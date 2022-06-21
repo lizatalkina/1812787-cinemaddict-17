@@ -16,14 +16,16 @@ export default class MoviePresenter {
   #movieCardComponent = null;
   #changeData = null;
   #popup = null;
+  #getComments = null;
   #comments = [];
   #changeMode = null;
   #mode = Mode.DEFAULT;
 
-  constructor (filmslistContainer, changeData, changeMode) {
+  constructor (filmslistContainer, changeData, changeMode, getComments) {
     this.#filmslistContainerComponent = filmslistContainer;
     this.#changeData = changeData;
     this.#changeMode = changeMode;
+    this.#getComments = getComments;
   }
 
   init = (film) => {
@@ -56,7 +58,7 @@ export default class MoviePresenter {
     }
   };
 
-  #handleWatchlistClick = () => {
+  #handleWatchlistClick = async () => {
     const update = Object.assign({}, this.#film, {
       userDetails: {...this.#film.userDetails, watchlist: !this.#film.userDetails.watchlist}
     });
@@ -71,14 +73,14 @@ export default class MoviePresenter {
       update);
     this.#film = update;
     if (this.#mode !== Mode.DEFAULT) {
-      this.#renderPopup();
+      await this.#renderPopup();
       if (updateScroll) {
         document.querySelector('.film-details').scrollTo(0, scroll);
       }
     }
   };
 
-  #handleAlreadyWatchedClick = () => {
+  #handleAlreadyWatchedClick = async () => {
     const update = Object.assign({}, this.#film, {
       userDetails: {...this.#film.userDetails, alreadyWatched: !this.#film.userDetails.alreadyWatched}
     });
@@ -93,14 +95,14 @@ export default class MoviePresenter {
       update);
     this.#film = update;
     if (this.#mode !== Mode.DEFAULT) {
-      this.#renderPopup();
+      await this.#renderPopup();
       if (updateScroll) {
         document.querySelector('.film-details').scrollTo(0, scroll);
       }
     }
   };
 
-  #handleFavoriteClick = () => {
+  #handleFavoriteClick = async () => {
     const update = Object.assign({}, this.#film, {
       userDetails: {...this.#film.userDetails, favorite: !this.#film.userDetails.favorite}
     });
@@ -115,17 +117,19 @@ export default class MoviePresenter {
       update);
     this.#film = update;
     if (this.#mode !== Mode.DEFAULT) {
-      this.#renderPopup();
+      await this.#renderPopup();
       if (updateScroll) {
         document.querySelector('.film-details').scrollTo(0, scroll);
       }
     }
   };
 
-  #renderPopup = () => {
+  #renderPopup = async () => {
     this.#changeMode();
     this.#closePopup();
-    this.#popup = new PopupView(this.#film);
+    this.#comments = await this.#getComments(this.#film);
+    this.#mode = Mode.POPUP;
+    this.#popup = new PopupView(this.#film, this.#comments);
     render(this.#popup, siteMainElement);
     this.#popup.setCloseClickHandler(this.#closePopupRenderBoard);
     this.#popup.setDeleteCommentClickHandler(this.#handleDeleteCommentClick);
@@ -135,12 +139,10 @@ export default class MoviePresenter {
     this.#popup.setFavoriteHandler(this.#handleFavoriteClick);
     document.addEventListener('keydown', this.#escKeyDownHandler);
     document.body.classList.add('hide-overflow');
-    this.#mode = Mode.POPUP;
   };
 
   #closePopup = () => {
     remove(this.#popup);
-    this.#popup = null;
     document.body.classList.remove('hide-overflow');
     document.removeEventListener('keydown', this.#escKeyDownHandler);
     this.#mode = Mode.DEFAULT;
@@ -157,7 +159,8 @@ export default class MoviePresenter {
     }
   };
 
-  #handleSendCommentKeydown = (movie, comment) => {
+  #handleSendCommentKeydown = async (movie, comment) => {
+    const scroll = document.querySelector('.film-details').scrollTop;
     this.#changeData(
       UserAction.ADD_COMMENT,
       UpdateType.PATCH,
@@ -165,14 +168,14 @@ export default class MoviePresenter {
       comment,
     );
     this.#film = movie;
-    const scroll = document.querySelector('.film-details').scrollTop;
     if (this.#mode !== Mode.DEFAULT) {
-      this.#renderPopup();
+      await this.#renderPopup();
       document.querySelector('.film-details').scrollTo(0, scroll);
     }
   };
 
-  #handleDeleteCommentClick = (movie, comment) => {
+  #handleDeleteCommentClick = async (movie, comment) => {
+    const scroll = document.querySelector('.film-details').scrollTop;
     this.#changeData (
       UserAction.DELETE_COMMENT,
       UpdateType.PATCH,
@@ -180,11 +183,39 @@ export default class MoviePresenter {
       comment,
     );
     this.#film = movie;
-    const scroll = document.querySelector('.film-details').scrollTop;
     if (this.#mode !== Mode.DEFAULT) {
-      this.#renderPopup();
+      await this.#renderPopup();
       document.querySelector('.film-details').scrollTo(0, scroll);
     }
+  };
+
+  setSaving = () => {
+    if (this.#mode === Mode.POPUP) {
+      this.#popup.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  };
+
+  setDeleting = () => {
+    if (this.#mode === Mode.POPUP) {
+      this.#popup.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  };
+
+  setAborting = () => {
+    const resetFormState = () => {
+      this.#popup.updateElement({
+        isDisabled: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#popup.shake(resetFormState);
   };
 
 }

@@ -20,10 +20,10 @@ const createFilmCardTemplate = (film) => {
       <p class="film-card__info">
         <span class="film-card__year">${date}</span>
         <span class="film-card__duration">${time}</span>
-        <span class="film-card__genre">${filmInfo.genre}</span>
+        <span class="film-card__genre">${(filmInfo.genre).join(' ')}</span>
       </p>
       <img src="${filmInfo.poster}" alt="" class="film-card__poster">
-      <p class="film-card__description">${filmInfo.description}</p>
+        ${filmInfo.description !== null ? `<p class="film-card__description">${filmInfo.description}</p>` : ''}
       <span class="film-card__comments">${numberOfComments} comments</span>
     </a>
     <div class="film-card__controls">

@@ -48,6 +48,35 @@ export default class MoviePresenter {
     remove(prevMovieCardComponent);
   };
 
+  setSaving = () => {
+    if (this.#mode === Mode.POPUP) {
+      this.#popup.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  };
+
+  setDeleting = () => {
+    if (this.#mode === Mode.POPUP) {
+      this.#popup.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  };
+
+  setAborting = () => {
+    const resetFormState = () => {
+      this.#popup.updateElement({
+        isDisabled: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#popup.shake(resetFormState);
+  };
+
   destroy = () => {
     remove(this.#movieCardComponent);
   };
@@ -56,6 +85,34 @@ export default class MoviePresenter {
     if (this.#mode === Mode.POPUP) {
       this.#closePopup();
     }
+  };
+
+  #renderPopup = async () => {
+    this.#changeMode();
+    this.#closePopup();
+    this.#comments = await this.#getComments(this.#film);
+    this.#mode = Mode.POPUP;
+    this.#popup = new PopupView(this.#film, this.#comments);
+    render(this.#popup, siteMainElement);
+    this.#popup.setCloseClickHandler(this.#closePopupRenderBoard);
+    this.#popup.setDeleteCommentClickHandler(this.#handleDeleteCommentClick);
+    this.#popup.setSendCommentKeydownHandler(this.#handleSendCommentKeydown);
+    this.#popup.setWatchlistClickHandler(this.#handleWatchlistClick);
+    this.#popup.setAlreadyWatchedHandler(this.#handleAlreadyWatchedClick);
+    this.#popup.setFavoriteHandler(this.#handleFavoriteClick);
+    document.addEventListener('keydown', this.#escKeyDownHandler);
+    document.body.classList.add('hide-overflow');
+  };
+
+  #closePopup = () => {
+    remove(this.#popup);
+    document.body.classList.remove('hide-overflow');
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
+    this.#mode = Mode.DEFAULT;
+  };
+
+  #closePopupRenderBoard = () => {
+    this.#closePopup();
   };
 
   #handleWatchlistClick = async () => {
@@ -124,41 +181,6 @@ export default class MoviePresenter {
     }
   };
 
-  #renderPopup = async () => {
-    this.#changeMode();
-    this.#closePopup();
-    this.#comments = await this.#getComments(this.#film);
-    this.#mode = Mode.POPUP;
-    this.#popup = new PopupView(this.#film, this.#comments);
-    render(this.#popup, siteMainElement);
-    this.#popup.setCloseClickHandler(this.#closePopupRenderBoard);
-    this.#popup.setDeleteCommentClickHandler(this.#handleDeleteCommentClick);
-    this.#popup.setSendCommentKeydownHandler(this.#handleSendCommentKeydown);
-    this.#popup.setWatchlistClickHandler(this.#handleWatchlistClick);
-    this.#popup.setAlreadyWatchedHandler(this.#handleAlreadyWatchedClick);
-    this.#popup.setFavoriteHandler(this.#handleFavoriteClick);
-    document.addEventListener('keydown', this.#escKeyDownHandler);
-    document.body.classList.add('hide-overflow');
-  };
-
-  #closePopup = () => {
-    remove(this.#popup);
-    document.body.classList.remove('hide-overflow');
-    document.removeEventListener('keydown', this.#escKeyDownHandler);
-    this.#mode = Mode.DEFAULT;
-  };
-
-  #closePopupRenderBoard = () => {
-    this.#closePopup();
-  };
-
-  #escKeyDownHandler = (evt) => {
-    if (isEscapeKey(evt)) {
-      evt.preventDefault();
-      this.#closePopup();
-    }
-  };
-
   #handleSendCommentKeydown = async (movie, comment) => {
     const scroll = document.querySelector('.film-details').scrollTop;
     this.#changeData(
@@ -189,33 +211,11 @@ export default class MoviePresenter {
     }
   };
 
-  setSaving = () => {
-    if (this.#mode === Mode.POPUP) {
-      this.#popup.updateElement({
-        isDisabled: true,
-        isSaving: true,
-      });
+  #escKeyDownHandler = (evt) => {
+    if (isEscapeKey(evt)) {
+      evt.preventDefault();
+      this.#closePopup();
     }
-  };
-
-  setDeleting = () => {
-    if (this.#mode === Mode.POPUP) {
-      this.#popup.updateElement({
-        isDisabled: true,
-        isDeleting: true,
-      });
-    }
-  };
-
-  setAborting = () => {
-    const resetFormState = () => {
-      this.#popup.updateElement({
-        isDisabled: false,
-        isDeleting: false,
-      });
-    };
-
-    this.#popup.shake(resetFormState);
   };
 
 }

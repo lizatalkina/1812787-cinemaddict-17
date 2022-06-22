@@ -13,13 +13,6 @@ export default class MoviesApiService extends ApiService {
       .then(ApiService.parseResponse);
   }
 
-  // getComments = async (movie) => {
-  //   const response = await this._load({url: `comments/${movie.id}`});
-  //   const parsedResponse = await ApiService.parseResponse(response);
-
-  //   return parsedResponse;
-  // };
-
   getCommentsByMovie = async (movie) => {
     const response = await this._load({ url: `comments/${movie.id}` });
     const parsedResponse = await ApiService.parseResponse(response);

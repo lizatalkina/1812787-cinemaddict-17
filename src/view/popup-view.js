@@ -1,19 +1,17 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {humanizeReleaseDueDate, humanizeTimeDueDate, humanizeCommentDueDate} from '../utils/movie.js';
-import {nanoid} from 'nanoid';
 import he from 'he';
 
 const pressed = new Set();
 const keysMetaEnter = ['Meta', 'Enter'];
 const keysControlEnter = ['Control', 'Enter'];
 
-const createPopupTemplate = (state) => {
-  const {filmInfo, userDetails, comments, checkEmoji, userComment} = state;
+const createPopupTemplate = (state, comments) => {
+  const {filmInfo, userDetails, checkEmoji, userComment, isDisabled, isDeleting} = state;
   const releaseDate = humanizeReleaseDueDate(filmInfo.release.date);
   const time = humanizeTimeDueDate(filmInfo.runtime);
 
-  const genres = filmInfo.genre.split(' ');
-  const genresTemplate = genres.map((genre) =>
+  const genresTemplate = filmInfo.genre.map((genre) =>
     `<span class="film-details__genre">${genre}</span>`
   ).join('\r\n');
 
@@ -33,7 +31,9 @@ const createPopupTemplate = (state) => {
       <p class="film-details__comment-info">
         <span class="film-details__comment-author">${comment.author}</span>
         <span class="film-details__comment-day">${humanizeCommentDueDate(comment.date)}</span>
-        <button class="film-details__comment-delete" data-id=${comment.id}>Delete</button>
+        <button class="film-details__comment-delete" data-id=${comment.id} ${isDisabled ? 'disabled' : ''}>
+        ${isDeleting ? 'Deleting...' : 'Delete'}
+        </button>
       </p>
     </div>
   </li>`
@@ -50,7 +50,7 @@ const createPopupTemplate = (state) => {
           <div class="film-details__poster">
             <img class="film-details__poster-img" src="${filmInfo.poster}" alt="">
 
-            <p class="film-details__age">${filmInfo.ageRating}</p>
+            <p class="film-details__age">${filmInfo.ageRating}+</p>
           </div>
 
           <div class="film-details__info">
@@ -91,12 +91,11 @@ const createPopupTemplate = (state) => {
                 <td class="film-details__cell">${filmInfo.release.releaseCountry}</td>
               </tr>
               <tr class="film-details__row">
-                <td class="film-details__term">${genres.length > 1 ? 'Genres' : 'Genre'}</td>
+                <td class="film-details__term">${filmInfo.genre.length > 1 ? 'Genres' : 'Genre'}</td>
                 <td class="film-details__cell">
                   ${genresTemplate}
               </tr>
             </table>
-
             <p class="film-details__film-description">
               ${filmInfo.description}
             </p>
@@ -110,7 +109,7 @@ const createPopupTemplate = (state) => {
         </section>
       </div>
 
-      <div class="film-details__bottom-container">
+      <div class="film-details__bottom-container" ${isDisabled ? 'disabled' : ''}>
         <section class="film-details__comments-wrap">
           <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">${numberOfComments}</span></h3>
 
@@ -154,14 +153,18 @@ const createPopupTemplate = (state) => {
   );
 };
 export default class PopupView extends AbstractStatefulView {
-  constructor(film) {
+  comments = [];
+  film = null;
+  constructor(film, comments) {
     super();
+    this.comments = comments;
+    this.film = film;
     this._state = PopupView.parseMovieToState(film);
     this.#setInnerHandlers();
   }
 
   get template() {
-    return createPopupTemplate(this._state);
+    return createPopupTemplate(this._state, this.comments);
   }
 
   reset = (movie) => {
@@ -181,7 +184,12 @@ export default class PopupView extends AbstractStatefulView {
   };
 
   setSendCommentKeydownHandler = (callback) => {
+    pressed.clear();
     this._callback.sendCommentKeydown = callback;
+    document.removeEventListener('keydown', this.#sendCommentKeydownHandler);
+    document.removeEventListener('keyup', (evt) => {
+      pressed.delete(evt.key);
+    });
     document.addEventListener('keydown', this.#sendCommentKeydownHandler);
     document.addEventListener('keyup', (evt) => {
       pressed.delete(evt.key);
@@ -239,14 +247,12 @@ export default class PopupView extends AbstractStatefulView {
     for (const key of keysMetaEnter) {
       if (!pressed.has(key)) {
         isMetaEnter = false;
-        continue;
       }
     }
 
     for (const key of keysControlEnter) {
       if (!pressed.has(key)) {
         isControlEnter = false;
-        continue;
       }
     }
 
@@ -256,17 +262,15 @@ export default class PopupView extends AbstractStatefulView {
 
     evt.preventDefault();
     pressed.clear();
-    if ((this._state.checkEmoji) && (this._state.userComment)) {
-      const newComment = {};
-      newComment.id = nanoid();
-      newComment.author = 'Movie Buff';
-      newComment.comment = this._state.userComment;
-      newComment.date = new Date();
-      newComment.emotion = this._state.checkEmoji;
-      this._state.comments.push(newComment);
-      this._callback.sendCommentKeydown(PopupView.parseStateToMovie(this._state), newComment);
-      this._state.checkEmoji = '';
-      this._state.userComment = '';
+    const userComment = document.querySelector('.film-details__comment-input')?.value ?? this._state.userComment;
+    const checkEmoji = document.querySelector('.film-details__emoji-item[checked="true"]')?.value ?? this._state.checkEmoji;
+    if ((checkEmoji) && (userComment)) {
+      const localComment = {};
+      localComment.comment = userComment;
+      localComment.emotion = checkEmoji;
+
+      this._state.comments.push(localComment);
+      this._callback.sendCommentKeydown(PopupView.parseStateToMovie(this._state), localComment);
     }
   };
 
@@ -338,12 +342,18 @@ export default class PopupView extends AbstractStatefulView {
 
   static parseMovieToState = (moviePopup) => ({...moviePopup,
     checkEmoji: '',
-    userComment: ''});
+    userComment: '',
+    isDisabled: false,
+    isDeleting: false,
+  });
 
   static parseStateToMovie = (state) => {
     const movie = {...state};
     delete movie.checkEmoji;
     delete movie.userComment;
+    delete movie.isDisabled;
+    delete movie.isDeleting;
+
     return movie;
   };
 }

@@ -1,7 +1,7 @@
 import FilterView from '../view/filter-view.js';
 import {render, replace, remove} from '../framework/render.js';
 import {FilterType, UpdateType} from '../const.js';
-import {filter} from '../utils/filter.js';
+import {filterMethod} from '../utils/filter.js';
 
 export default class FilterPresenter {
   #filterContainer = null;
@@ -22,10 +22,10 @@ export default class FilterPresenter {
   get filtersCount () {
     const movies = this.#moviesModel.movies;
     return {
-      [FilterType.ALL]: '',
-      [FilterType.WATCHLIST]: filter[FilterType.WATCHLIST](movies).length,
-      [FilterType.HISTORY]: filter[FilterType.HISTORY](movies).length,
-      [FilterType.FAVORITES]: filter[FilterType.FAVORITES](movies).length,
+      [FilterType.ALL]: filterMethod[FilterType.ALL](movies).length,
+      [FilterType.WATCHLIST]: filterMethod[FilterType.WATCHLIST](movies).length,
+      [FilterType.HISTORY]: filterMethod[FilterType.HISTORY](movies).length,
+      [FilterType.FAVORITES]: filterMethod[FilterType.FAVORITES](movies).length,
     };
   }
 
@@ -38,15 +38,15 @@ export default class FilterPresenter {
       },
       {
         type: FilterType.WATCHLIST,
-        count: filter[FilterType.WATCHLIST](movies).length,
+        count: filterMethod[FilterType.WATCHLIST](movies).length,
       },
       {
         type: FilterType.HISTORY,
-        count: filter[FilterType.HISTORY](movies).length,
+        count: filterMethod[FilterType.HISTORY](movies).length,
       },
       {
         type: FilterType.FAVORITES,
-        count: filter[FilterType.FAVORITES](movies).length,
+        count: filterMethod[FilterType.FAVORITES](movies).length,
       },
     ];
   }

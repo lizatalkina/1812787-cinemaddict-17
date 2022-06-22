@@ -41,9 +41,8 @@ const sortMovieRating = (movieA, movieB) => {
     return -1;
   } else if (movieB.filmInfo.totalRating > movieA.filmInfo.totalRating) {
     return 1;
-  } else {
-    return 0;
   }
+  return 0;
 };
 
 export {humanizeCommentDueDate, humanizeYearDueDate, humanizeReleaseDueDate, humanizeTimeDueDate, generateDate, sortMovieDate, sortMovieRating};

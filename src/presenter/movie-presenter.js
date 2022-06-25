@@ -115,7 +115,7 @@ export default class MoviePresenter {
     this.#closePopup();
   };
 
-  #handleWatchlistClick = async () => {
+  #handleWatchlistClick = async (updateType = UpdateType.MINOR) => {
     const update = Object.assign({}, this.#film, {
       userDetails: {...this.#film.userDetails, watchlist: !this.#film.userDetails.watchlist}
     });
@@ -126,7 +126,7 @@ export default class MoviePresenter {
     }
     this.#changeData(
       UserAction.UPDATE_MOVIE,
-      UpdateType.PATCH,
+      updateType,
       update);
     this.#film = update;
     if (this.#mode !== Mode.DEFAULT) {
@@ -137,7 +137,7 @@ export default class MoviePresenter {
     }
   };
 
-  #handleAlreadyWatchedClick = async () => {
+  #handleAlreadyWatchedClick = async (updateType = UpdateType.MINOR) => {
     const update = Object.assign({}, this.#film, {
       userDetails: {...this.#film.userDetails, alreadyWatched: !this.#film.userDetails.alreadyWatched}
     });
@@ -148,7 +148,7 @@ export default class MoviePresenter {
     }
     this.#changeData(
       UserAction.UPDATE_MOVIE,
-      UpdateType.PATCH,
+      updateType,
       update);
     this.#film = update;
     if (this.#mode !== Mode.DEFAULT) {
@@ -159,7 +159,7 @@ export default class MoviePresenter {
     }
   };
 
-  #handleFavoriteClick = async () => {
+  #handleFavoriteClick = async (updateType = UpdateType.MINOR) => {
     const update = Object.assign({}, this.#film, {
       userDetails: {...this.#film.userDetails, favorite: !this.#film.userDetails.favorite}
     });
@@ -170,7 +170,7 @@ export default class MoviePresenter {
     }
     this.#changeData(
       UserAction.UPDATE_MOVIE,
-      UpdateType.PATCH,
+      updateType,
       update);
     this.#film = update;
     if (this.#mode !== Mode.DEFAULT) {

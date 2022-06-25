@@ -1,6 +1,7 @@
 import FilmsListContainerView from '../view/films-list-container-view.js';
 import FilmsListView from '../view/films-list-view.js';
 import FilmsView from '../view/films-view.js';
+import ProfileView from '../view/profile-view.js';
 import ShowMoreButtonView from '../view/show-more-button-view.js';
 import {render, remove, RenderPosition} from '../framework/render.js';
 import FilmsListEmptyView from '../view/films-list-empty-view.js';
@@ -15,6 +16,8 @@ import FooterStatisticsView from '../view/footer-statistics-view.js';
 
 const siteMainElement = document.querySelector('.main');
 const siteFooterElement = document.querySelector('.footer');
+const siteHeaderElement = document.querySelector('.header');
+
 const MOVIE_COUNT_PER_STEP = 5;
 
 export default class ListPresenter {
@@ -30,6 +33,7 @@ export default class ListPresenter {
   #footerStatisticsComponent  = null;
   #moviesModel = null;
   #filterModel = null;
+  #headerComponent = null;
 
   #moviePresenter = new Map();
   #renderedMovieCount = MOVIE_COUNT_PER_STEP;
@@ -102,19 +106,23 @@ export default class ListPresenter {
   #handleModelEvent = (updateType, data) => {
     switch (updateType) {
       case UpdateType.PATCH:
+        this.#renderHeader();
         this.#moviePresenter.get(data.id).init(data);
         break;
       case UpdateType.MINOR:
+        this.#renderHeader();
         this.#clearBoard();
         this.#renderBoard();
         break;
       case UpdateType.MAJOR:
+        this.#renderHeader();
         this.#clearBoard({resetRenderedMovieCount: true, resetSortType: true});
         this.#renderBoard();
         break;
       case UpdateType.INIT:
         this.#isLoading = false;
         remove(this.#loadingComponent);
+        this.#renderHeader();
         this.#renderBoard();
         this.#renderFooter();
         break;
@@ -212,6 +220,16 @@ export default class ListPresenter {
     if (movieCount > this.#renderedMovieCount) {
       this.#renderShowMoreButton();
     }
+  };
+
+  #renderHeader = () => {
+    const movies = this.movies;
+    const alreadyWatched = filterMethod[FilterType.WATCHLIST](movies).length;
+    if (this.#headerComponent !== null) {
+      remove(this.#headerComponent);
+    }
+    this.#headerComponent = new ProfileView(alreadyWatched);
+    render(this.#headerComponent, siteHeaderElement);
   };
 
   #renderFooter = () => {

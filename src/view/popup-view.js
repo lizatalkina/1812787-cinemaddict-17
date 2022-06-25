@@ -1,10 +1,17 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {humanizeReleaseDueDate, humanizeTimeDueDate, humanizeCommentDueDate} from '../utils/movie.js';
 import he from 'he';
+import {UpdateType} from '../const.js';
 
 const pressed = new Set();
 const keysMetaEnter = ['Meta', 'Enter'];
 const keysControlEnter = ['Control', 'Enter'];
+const Emoji = {
+  SMILE: 'smile',
+  SLEEPING: 'sleeping',
+  PUKE: 'puke',
+  ANGRY: 'angry',
+};
 
 const createPopupTemplate = (state, comments) => {
   const {filmInfo, userDetails, checkEmoji, userComment, isDisabled, isDeleting} = state;
@@ -125,22 +132,22 @@ const createPopupTemplate = (state, comments) => {
             </label>
 
             <div class="film-details__emoji-list">
-              <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-smile" value="smile" ${checkEmoji === 'smile' ? 'checked = true' : ''}>
+              <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-smile" value="smile" ${checkEmoji === Emoji.SMILE ? 'checked = true' : ''}>
               <label class="film-details__emoji-label" for="emoji-smile">
                 <img src="./images/emoji/smile.png" width="30" height="30" alt="emoji">
               </label>
 
-              <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping" ${checkEmoji === 'sleeping' ? 'checked = true' : ''}>
+              <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-sleeping" value="sleeping" ${checkEmoji === Emoji.SLEEPING ? 'checked = true' : ''}>
               <label class="film-details__emoji-label" for="emoji-sleeping">
                 <img src="./images/emoji/sleeping.png" width="30" height="30" alt="emoji">
               </label>
 
-              <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-puke" value="puke" ${checkEmoji === 'puke' ? 'checked = true' : ''}>
+              <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-puke" value="puke" ${checkEmoji === Emoji.PUKE ? 'checked = true' : ''}>
               <label class="film-details__emoji-label" for="emoji-puke">
                 <img src="./images/emoji/puke.png" width="30" height="30" alt="emoji">
               </label>
 
-              <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-angry" value="angry" ${checkEmoji === 'angry' ? 'checked = true' : ''}>
+              <input class="film-details__emoji-item visually-hidden" name="comment-emoji" type="radio" id="emoji-angry" value="angry" ${checkEmoji === Emoji.ANGRY ? 'checked = true' : ''}>
               <label class="film-details__emoji-label" for="emoji-angry">
                 <img src="./images/emoji/angry.png" width="30" height="30" alt="emoji">
               </label>
@@ -213,17 +220,17 @@ export default class PopupView extends AbstractStatefulView {
 
   #watchlistClickHandler = (evt) => {
     evt.preventDefault();
-    this._callback.watchlistClick();
+    this._callback.watchlistClick(UpdateType.PATCH);
   };
 
   #alreadyWatchedClickHandler = (evt) => {
     evt.preventDefault();
-    this._callback.alreadyWatchedClick();
+    this._callback.alreadyWatchedClick(UpdateType.PATCH);
   };
 
   #favoriteClickHandler = (evt) => {
     evt.preventDefault();
-    this._callback.favoriteClick();
+    this._callback.favoriteClick(UpdateType.PATCH);
   };
 
   #closeClickHandler = (evt) => {
@@ -295,7 +302,7 @@ export default class PopupView extends AbstractStatefulView {
     evt.preventDefault();
     const scroll = document.querySelector('.film-details').scrollTop;
     this.updateElement({
-      checkEmoji: 'smile',
+      checkEmoji: Emoji.SMILE,
     });
     document.querySelector('.film-details').scrollTo(0, scroll);
   };
@@ -304,7 +311,7 @@ export default class PopupView extends AbstractStatefulView {
     evt.preventDefault();
     const scroll = document.querySelector('.film-details').scrollTop;
     this.updateElement({
-      checkEmoji: 'sleeping',
+      checkEmoji: Emoji.SLEEPING,
     });
     document.querySelector('.film-details').scrollTo(0, scroll);
   };
@@ -313,7 +320,7 @@ export default class PopupView extends AbstractStatefulView {
     evt.preventDefault();
     const scroll = document.querySelector('.film-details').scrollTop;
     this.updateElement({
-      checkEmoji: 'puke',
+      checkEmoji: Emoji.PUKE,
     });
     document.querySelector('.film-details').scrollTo(0, scroll);
   };
@@ -322,7 +329,7 @@ export default class PopupView extends AbstractStatefulView {
     evt.preventDefault();
     const scroll = document.querySelector('.film-details').scrollTop;
     this.updateElement({
-      checkEmoji: 'angry',
+      checkEmoji: Emoji.ANGRY,
     });
     document.querySelector('.film-details').scrollTo(0, scroll);
   };

@@ -85,7 +85,7 @@ export default class ListPresenter {
     switch (actionType) {
       case UserAction.UPDATE_MOVIE:
         this.#moviePresenter.get(update.id).setSaving();
-        this.#moviesModel.updateMovie(updateType, update);
+        await this.#moviesModel.updateMovie(updateType, update);
         break;
       case UserAction.ADD_COMMENT:
         this.#moviePresenter.get(update.id).setSaving();
@@ -98,7 +98,7 @@ export default class ListPresenter {
       case UserAction.DELETE_COMMENT:
         this.#moviePresenter.get(update.id).setSaving();
         this.#moviePresenter.get(update.id).setDeleting();
-        this.#moviesModel.deleteComment(updateType, update, comment);
+        await this.#moviesModel.deleteComment(updateType, update, comment);
         break;
     }
   };

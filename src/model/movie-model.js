@@ -77,7 +77,8 @@ export default class MoviesModel extends Observable{
     try {
       const addResponse = await this.#moviesApiService.addCommentByMovie(userComment, movieUpdate.id);
       const updatedMovie = this.#adaptToClient(addResponse.movie);
-      this.updateLocalMovie(updateType, updatedMovie);
+      movieUpdate.comments = updatedMovie.comments;
+      this.updateLocalMovie(updateType, movieUpdate);
     } catch(err) {
       throw new Error('Can\'t add comment');
     }

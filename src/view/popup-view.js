@@ -275,8 +275,6 @@ export default class PopupView extends AbstractStatefulView {
       const localComment = {};
       localComment.comment = userComment;
       localComment.emotion = checkEmoji;
-
-      this._state.comments.push(localComment);
       this._callback.sendCommentKeydown(PopupView.parseStateToMovie(this._state), localComment);
     }
   };

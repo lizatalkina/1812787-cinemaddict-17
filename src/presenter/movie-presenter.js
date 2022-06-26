@@ -115,23 +115,28 @@ export default class MoviePresenter {
     this.#closePopup();
   };
 
-  #handleWatchlistClick = async (updateType = UpdateType.MINOR) => {
-    const update = Object.assign({}, this.#film, {
-      userDetails: {...this.#film.userDetails, watchlist: !this.#film.userDetails.watchlist}
-    });
+  #getScroll = () => {
     const updateScroll = document.querySelector('.film-details') !== null;
     let scroll = 0;
     if (updateScroll) {
       scroll = document.querySelector('.film-details').scrollTop;
     }
-    this.#changeData(
+    return scroll;
+  };
+
+  #handleWatchlistClick = async (updateType = UpdateType.MINOR) => {
+    const update = Object.assign({}, this.#film, {
+      userDetails: {...this.#film.userDetails, watchlist: !this.#film.userDetails.watchlist}
+    });
+    const scroll = this.#getScroll();
+    await this.#changeData(
       UserAction.UPDATE_MOVIE,
       updateType,
       update);
     this.#film = update;
     if (this.#mode !== Mode.DEFAULT) {
       await this.#renderPopup();
-      if (updateScroll) {
+      if (scroll > 0) {
         document.querySelector('.film-details').scrollTo(0, scroll);
       }
     }
@@ -141,19 +146,15 @@ export default class MoviePresenter {
     const update = Object.assign({}, this.#film, {
       userDetails: {...this.#film.userDetails, alreadyWatched: !this.#film.userDetails.alreadyWatched}
     });
-    const updateScroll = document.querySelector('.film-details') !== null;
-    let scroll = 0;
-    if (updateScroll) {
-      scroll = document.querySelector('.film-details').scrollTop;
-    }
-    this.#changeData(
+    const scroll = this.#getScroll();
+    await this.#changeData(
       UserAction.UPDATE_MOVIE,
       updateType,
       update);
     this.#film = update;
     if (this.#mode !== Mode.DEFAULT) {
       await this.#renderPopup();
-      if (updateScroll) {
+      if (scroll > 0) {
         document.querySelector('.film-details').scrollTo(0, scroll);
       }
     }
@@ -163,19 +164,15 @@ export default class MoviePresenter {
     const update = Object.assign({}, this.#film, {
       userDetails: {...this.#film.userDetails, favorite: !this.#film.userDetails.favorite}
     });
-    const updateScroll = document.querySelector('.film-details') !== null;
-    let scroll = 0;
-    if (updateScroll) {
-      scroll = document.querySelector('.film-details').scrollTop;
-    }
-    this.#changeData(
+    const scroll = this.#getScroll();
+    await this.#changeData(
       UserAction.UPDATE_MOVIE,
       updateType,
       update);
     this.#film = update;
     if (this.#mode !== Mode.DEFAULT) {
       await this.#renderPopup();
-      if (updateScroll) {
+      if (scroll > 0) {
         document.querySelector('.film-details').scrollTo(0, scroll);
       }
     }
@@ -183,7 +180,7 @@ export default class MoviePresenter {
 
   #handleSendCommentKeydown = async (movie, comment) => {
     const scroll = document.querySelector('.film-details').scrollTop;
-    this.#changeData(
+    await this.#changeData(
       UserAction.ADD_COMMENT,
       UpdateType.PATCH,
       movie,
@@ -198,7 +195,7 @@ export default class MoviePresenter {
 
   #handleDeleteCommentClick = async (movie, comment) => {
     const scroll = document.querySelector('.film-details').scrollTop;
-    this.#changeData (
+    await this.#changeData (
       UserAction.DELETE_COMMENT,
       UpdateType.PATCH,
       movie,
